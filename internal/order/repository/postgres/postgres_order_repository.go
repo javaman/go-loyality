@@ -44,7 +44,7 @@ func (r *postgresOrderRepository) Insert(o *domain.Order) error {
 }
 
 func (r *postgresOrderRepository) Select(number string) (*domain.Order, error) {
-	rows, err := r.db.Query("SELECT number, login, status, accrural, uploaded_at FROM orders WHERE number=$1", number)
+	rows, err := r.db.Query("SELECT number, login, status, accrural, uploaded_at FROM orders WHERE number=$1 ORDER BY uploaded_at", number)
 
 	if err != nil {
 		return nil, err

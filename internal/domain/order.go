@@ -2,14 +2,7 @@ package domain
 
 import (
 	"encoding/json"
-	"errors"
 	"time"
-)
-
-var (
-	ErrorBadOrderNumber         error = errors.New("bad order number format")
-	ErrorOrderExistsSameUser    error = errors.New("order exists")
-	ErrorOrderExistsAnotherUser error = errors.New("order exists but different user")
 )
 
 type OrderStatus string
