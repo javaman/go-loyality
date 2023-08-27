@@ -26,7 +26,7 @@ func New(e *echo.Echo, secret string, storeWithdrawUsecase domain.StoreWithdrawU
 		SigningKey: []byte(secret),
 	}
 
-	r1 := e.Group("/api/user/withdraw")
+	r1 := e.Group("/api/user/balance/withdraw")
 	r1.Use(echojwt.WithConfig(config))
 	r1.POST("", handler.StoreWithdraw)
 
