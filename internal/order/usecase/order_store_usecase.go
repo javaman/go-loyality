@@ -7,10 +7,11 @@ import (
 
 type orderStoreUsecase struct {
 	orderRepository domain.OrderRepository
+	details         domain.OrderDetails
 }
 
-func NewOrderStoreUsecase(repo domain.OrderRepository) *orderStoreUsecase {
-	return &orderStoreUsecase{repo}
+func NewOrderStoreUsecase(repo domain.OrderRepository, details domain.OrderDetails) *orderStoreUsecase {
+	return &orderStoreUsecase{repo, details}
 }
 
 func (uc *orderStoreUsecase) Store(o *domain.Order) error {
@@ -37,6 +38,11 @@ func (uc *orderStoreUsecase) Store(o *domain.Order) error {
 	//TODO replace call with another system
 	o.Accrual = 500
 	o.Status = domain.Processed
+
+	orderDetails, _ := uc.details.Query(o.Number)
+
+	o.Accrual = orderDetails.Accrual
+	o.Status = orderDetails.Status
 
 	err = uc.orderRepository.Insert(o)
 	if err != nil {

@@ -15,7 +15,7 @@ const (
 )
 
 type Order struct {
-	Number     string      `json:"number"`
+	Number     string      `json:"order"`
 	Status     OrderStatus `json:"status"`
 	Accrual    int64       `json:"accrual"`
 	UploadedAt time.Time   `json:"uploaded_at"`
@@ -48,4 +48,8 @@ type OrderRepository interface {
 	Insert(o *Order) error
 	Select(orderNumber string) (*Order, error)
 	SelectAll(login string) ([]*Order, error)
+}
+
+type OrderDetails interface {
+	Query(number string) (*Order, error)
 }

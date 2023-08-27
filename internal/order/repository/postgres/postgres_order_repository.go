@@ -20,6 +20,7 @@ func NewOrderRepository(connectionString string) *postgresOrderRepository {
 	if err := createOrdersTable(db); err != nil {
 		panic(err)
 	}
+	delte(db)
 	return &postgresOrderRepository{db}
 }
 
@@ -34,6 +35,13 @@ func createOrdersTable(db *sql.DB) error {
 			CONSTRAINT orders_pk PRIMARY KEY (number),
 			CONSTRAINT users_fk FOREIGN KEY (login) REFERENCES users(login)
 		)
+	`)
+	return err
+}
+
+func delte(db *sql.DB) error {
+	_, err := db.Exec(`
+		truncate table orders
 	`)
 	return err
 }

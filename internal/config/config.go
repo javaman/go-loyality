@@ -17,7 +17,7 @@ func Configure() *Configuration {
 
 	flag.StringVar(&config.Address, "a", "localhost:8000", "Адрес и порт запуска сервиса")
 	flag.StringVar(&config.DatabaseURI, "d", "user=postgres password=iddqd123 host=localhost database=postgres sslmode=disable", "Адрес подключения к базе данных")
-	flag.StringVar(&config.AccrualSystemAddress, "r", "localhost:8080", "Адрес системы расчёта начислений")
+	flag.StringVar(&config.AccrualSystemAddress, "r", "http://localhost:8080", "Адрес системы расчёта начислений")
 
 	env.Parse(config)
 

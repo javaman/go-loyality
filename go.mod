@@ -8,6 +8,7 @@ require (
 	github.com/ShiraazMoollatjie/goluhn v0.0.0-20211017190329-0d86158c056a // indirect
 	github.com/caarlos0/env/v9 v9.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+	github.com/go-resty/resty/v2 v2.7.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
