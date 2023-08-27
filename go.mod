@@ -4,6 +4,8 @@ go 1.20
 
 require github.com/jackc/pgx/v5 v5.4.3
 
+require golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
+
 require (
 	github.com/ShiraazMoollatjie/goluhn v0.0.0-20211017190329-0d86158c056a // indirect
 	github.com/caarlos0/env/v9 v9.0.0 // indirect
@@ -27,7 +29,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 )

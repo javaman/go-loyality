@@ -17,7 +17,7 @@ const (
 type Order struct {
 	Number     string      `json:"order"`
 	Status     OrderStatus `json:"status"`
-	Accrual    int64       `json:"accrual"`
+	Accrual    json.Number `json:"accrual"`
 	UploadedAt time.Time   `json:"uploaded_at"`
 	Login      string      `json:"-"`
 }
@@ -26,7 +26,7 @@ func (o *Order) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		Number     string      `json:"number"`
 		Status     OrderStatus `json:"status"`
-		Accrual    int64       `json:"accrual"`
+		Accrual    json.Number `json:"accrual"`
 		UploadedAt string      `json:"uploaded_at"`
 	}{
 		Number:     o.Number,

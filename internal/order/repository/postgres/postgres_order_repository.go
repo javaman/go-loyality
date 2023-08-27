@@ -2,8 +2,13 @@ package repository
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
+	"strconv"
+	"strings"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"golang.org/x/exp/slices"
 
 	"github.com/javaman/go-loyality/internal/domain"
 )
@@ -47,7 +52,21 @@ func delte(db *sql.DB) error {
 }
 
 func (r *postgresOrderRepository) Insert(o *domain.Order) error {
-	_, err := r.db.Exec("INSERT INTO orders (number, login, status, accrural) VALUES ($1, $2, $3, $4)", o.Number, o.Login, o.Status, o.Accrual)
+	str := strings.Split(string(o.Accrual), ".")
+	actualAccural, _ := strconv.Atoi(str[0])
+	actualAccural *= 100
+	if len(str) > 1 {
+		switch len(str[1]) {
+		case 1:
+			x, _ := strconv.Atoi(str[1])
+			actualAccural += x * 10
+		default:
+			x, _ := strconv.Atoi(str[1][0:2])
+			actualAccural += x
+		}
+	}
+
+	_, err := r.db.Exec("INSERT INTO orders (number, login, status, accrural) VALUES ($1, $2, $3, $4)", o.Number, o.Login, o.Status, actualAccural)
 	return err
 }
 
@@ -65,7 +84,24 @@ func (r *postgresOrderRepository) Select(number string) (*domain.Order, error) {
 
 	if rows.Next() {
 		o := new(domain.Order)
-		err := rows.Scan(&o.Number, &o.Login, &o.Status, &o.Accrual, &o.UploadedAt)
+
+		var x int64
+
+		err := rows.Scan(&o.Number, &o.Login, &o.Status, &x, &o.UploadedAt)
+
+		a := x / 100
+		b := x % 100
+
+		if b < 10 && b > 0 {
+			o.Accrual = json.Number(fmt.Sprintf("%d.0%d", a, b))
+		} else if slices.Contains([]int64{10, 20, 30, 40, 50, 60, 70, 80, 90}, b) {
+			o.Accrual = json.Number(fmt.Sprintf("%d.%d", a, b/10))
+		} else if b == 0 {
+			o.Accrual = json.Number(fmt.Sprintf("%d", a))
+		} else {
+			o.Accrual = json.Number(fmt.Sprintf("%d.%d", a, b))
+		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -91,7 +127,24 @@ func (r *postgresOrderRepository) SelectAll(login string) ([]*domain.Order, erro
 
 	for rows.Next() {
 		o := new(domain.Order)
-		err := rows.Scan(&o.Number, &o.Login, &o.Status, &o.Accrual, &o.UploadedAt)
+
+		var x int64
+
+		err := rows.Scan(&o.Number, &o.Login, &o.Status, &x, &o.UploadedAt)
+
+		a := x / 100
+		b := x % 100
+
+		if b < 10 && b > 0 {
+			o.Accrual = json.Number(fmt.Sprintf("%d.0%d", a, b))
+		} else if slices.Contains([]int64{10, 20, 30, 40, 50, 60, 70, 80, 90}, b) {
+			o.Accrual = json.Number(fmt.Sprintf("%d.%d", a, b/10))
+		} else if b == 0 {
+			o.Accrual = json.Number(fmt.Sprintf("%d", a))
+		} else {
+			o.Accrual = json.Number(fmt.Sprintf("%d.%d", a, b))
+		}
+
 		if err != nil {
 			return nil, err
 		}

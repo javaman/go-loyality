@@ -35,10 +35,6 @@ func (uc *orderStoreUsecase) Store(o *domain.Order) error {
 		}
 	}
 
-	//TODO replace call with another system
-	o.Accrual = 500
-	o.Status = domain.Processed
-
 	orderDetails, _ := uc.details.Query(o.Number)
 
 	o.Accrual = orderDetails.Accrual
