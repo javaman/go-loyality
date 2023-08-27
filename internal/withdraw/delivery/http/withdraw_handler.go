@@ -30,7 +30,7 @@ func New(e *echo.Echo, secret string, storeWithdrawUsecase domain.StoreWithdrawU
 	r1.Use(echojwt.WithConfig(config))
 	r1.POST("", handler.StoreWithdraw)
 
-	r2 := e.Group("/api/user/withdrawls")
+	r2 := e.Group("/api/user/withdrawals")
 	r2.Use(echojwt.WithConfig(config))
 	r2.GET("", handler.ListWithdrawls)
 }
