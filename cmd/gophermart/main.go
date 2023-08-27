@@ -21,7 +21,7 @@ func main() {
 	e := echo.New()
 
 	userhandler.New(e, "iddqd", userusecases.NewUserRegisterUsecase(ur), userusecases.NewUserLoginUsecase(ur))
-	orderhandler.New(e, "iddqd", orderusecases.NewOrderStoreUsecase(or))
+	orderhandler.New(e, "iddqd", orderusecases.NewOrderStoreUsecase(or), orderusecases.NewOrderListUsecase(or))
 
 	e.Logger.Fatal(e.Start(cfg.Address))
 }

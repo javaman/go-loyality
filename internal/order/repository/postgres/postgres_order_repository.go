@@ -66,3 +66,28 @@ func (r *postgresOrderRepository) Select(number string) (*domain.Order, error) {
 		return nil, nil
 	}
 }
+
+func (r *postgresOrderRepository) SelectAll(login string) ([]*domain.Order, error) {
+	rows, err := r.db.Query("SELECT number, login, status, accrural, uploaded_at FROM orders WHERE login=$1", login)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_ = rows.Close()
+		_ = rows.Err()
+	}()
+
+	var orders []*domain.Order
+
+	for rows.Next() {
+		o := new(domain.Order)
+		err := rows.Scan(&o.Number, &o.Login, &o.Status, &o.Accrual, &o.UploadedAt)
+		if err != nil {
+			return nil, err
+		}
+		orders = append(orders, o)
+	}
+	return orders, nil
+}

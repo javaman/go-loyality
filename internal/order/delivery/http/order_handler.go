@@ -12,13 +12,15 @@ import (
 
 type orderHandler struct {
 	orderStoreUsecase domain.OrderStoreUsecase
+	orderListUsecase  domain.OrderListUsecase
 	secret            string
 }
 
-func New(e *echo.Echo, secret string, orderStoreUsecase domain.OrderStoreUsecase) {
+func New(e *echo.Echo, secret string, orderStoreUsecase domain.OrderStoreUsecase, orderListUsecase domain.OrderListUsecase) {
 	handler := &orderHandler{
 		secret:            secret,
 		orderStoreUsecase: orderStoreUsecase,
+		orderListUsecase:  orderListUsecase,
 	}
 
 	config := echojwt.Config{
@@ -28,6 +30,31 @@ func New(e *echo.Echo, secret string, orderStoreUsecase domain.OrderStoreUsecase
 	r := e.Group("/api/user/orders")
 	r.Use(echojwt.WithConfig(config))
 	r.POST("", handler.StoreOrder)
+	r.GET("", handler.List)
+}
+
+func getLogin(c echo.Context) (string, error) {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	return claims.GetSubject()
+}
+
+func (h *orderHandler) List(c echo.Context) error {
+	login, err := getLogin(c)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	list, err := h.orderListUsecase.List(login)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	if len(list) == 0 {
+		return c.NoContent(http.StatusNoContent)
+	}
+
+	return c.JSON(http.StatusOK, list)
 }
 
 func (h *orderHandler) StoreOrder(c echo.Context) error {
@@ -37,10 +64,7 @@ func (h *orderHandler) StoreOrder(c echo.Context) error {
 	}
 	orderNumber := string(b)
 
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-
-	login, err := claims.GetSubject()
+	login, err := getLogin(c)
 
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
