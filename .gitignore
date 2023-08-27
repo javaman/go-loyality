@@ -21,3 +21,7 @@ vendor/
 # IDEs directories
 .idea
 .vscode
+
+# My stuff
+testing-scripts
+internal/.DS_Store
