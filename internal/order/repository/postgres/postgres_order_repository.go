@@ -45,11 +45,11 @@ func createOrdersTable(db *sql.DB) error {
 
 func (r *postgresOrderRepository) Insert(o *domain.Order) error {
 
-	_, err := r.db.Exec("INSERT INTO orders (number, login, status, accrural) VALUES ($1, $2, $3, $4)", o.Number, o.Login, o.Status, fromJsonNumber(o.Accrual))
+	_, err := r.db.Exec("INSERT INTO orders (number, login, status, accrural) VALUES ($1, $2, $3, $4)", o.Number, o.Login, o.Status, fromJSONNumber(o.Accrual))
 	return err
 }
 
-func fromJsonNumber(x json.Number) int64 {
+func fromJSONNumber(x json.Number) int64 {
 	str := strings.Split(string(x), ".")
 	actualAccural, _ := strconv.Atoi(str[0])
 	actualAccural *= 100
@@ -66,7 +66,7 @@ func fromJsonNumber(x json.Number) int64 {
 	return int64(actualAccural)
 }
 
-func toJsonNumber(x int64) json.Number {
+func toJSONNumber(x int64) json.Number {
 	a := x / 100
 	b := x % 100
 	var result json.Number
@@ -103,7 +103,7 @@ func (r *postgresOrderRepository) Select(number string) (*domain.Order, error) {
 
 		err := rows.Scan(&o.Number, &o.Login, &o.Status, &x, &o.UploadedAt)
 
-		o.Accrual = toJsonNumber(x)
+		o.Accrual = toJSONNumber(x)
 
 		if err != nil {
 			return nil, err
@@ -135,7 +135,7 @@ func (r *postgresOrderRepository) SelectAll(login string) ([]*domain.Order, erro
 
 		err := rows.Scan(&o.Number, &o.Login, &o.Status, &x, &o.UploadedAt)
 
-		o.Accrual = toJsonNumber(x)
+		o.Accrual = toJSONNumber(x)
 
 		if err != nil {
 			return nil, err

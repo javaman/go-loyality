@@ -43,7 +43,7 @@ func createwWithdrawsTable(db *sql.DB) error {
 }
 
 func (r *postgresWithdrawRepository) Insert(w *domain.Withdraw) error {
-	_, err := r.db.Exec("INSERT INTO withdraws (number, login, sum) VALUES ($1, $2, $3)", w.Order, w.Login, fromJsonNumber(w.Sum))
+	_, err := r.db.Exec("INSERT INTO withdraws (number, login, sum) VALUES ($1, $2, $3)", w.Order, w.Login, fromJSONNumber(w.Sum))
 	return err
 }
 
@@ -65,7 +65,7 @@ func (r *postgresWithdrawRepository) SelectAll(login string) ([]*domain.Withdraw
 		o := new(domain.Withdraw)
 		var x int64
 		err := rows.Scan(&o.Order, &o.Login, &x, &o.ProcessedAt)
-		o.Sum = toJsonNumber(x)
+		o.Sum = toJSONNumber(x)
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +74,7 @@ func (r *postgresWithdrawRepository) SelectAll(login string) ([]*domain.Withdraw
 	return withdraws, nil
 }
 
-func fromJsonNumber(x json.Number) int64 {
+func fromJSONNumber(x json.Number) int64 {
 	str := strings.Split(string(x), ".")
 	actualAccural, _ := strconv.Atoi(str[0])
 	actualAccural *= 100
@@ -91,7 +91,7 @@ func fromJsonNumber(x json.Number) int64 {
 	return int64(actualAccural)
 }
 
-func toJsonNumber(x int64) json.Number {
+func toJSONNumber(x int64) json.Number {
 	a := x / 100
 	b := x % 100
 	var result json.Number

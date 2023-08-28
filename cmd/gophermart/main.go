@@ -5,6 +5,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	balancehandler "github.com/javaman/go-loyality/internal/balance/delivery/http"
+	balancerepo "github.com/javaman/go-loyality/internal/balance/repository/postgres"
+	balanceusecases "github.com/javaman/go-loyality/internal/balance/usecase"
 	"github.com/javaman/go-loyality/internal/config"
 	"github.com/javaman/go-loyality/internal/order/adapters"
 	orderhandler "github.com/javaman/go-loyality/internal/order/delivery/http"
@@ -24,14 +27,16 @@ func main() {
 	ur := userrepo.NewUserRepository(cfg.DatabaseURI)
 	or := orderrepo.NewOrderRepository(cfg.DatabaseURI)
 	wr := withdrawrepo.NewWithdrawRepository(cfg.DatabaseURI)
+	br := balancerepo.NewBalanceRepository(cfg.DatabaseURI)
 
-	fmt.Println(wr)
+	fmt.Println()
 
 	e := echo.New()
 
 	userhandler.New(e, "iddqd", userusecases.NewUserRegisterUsecase(ur), userusecases.NewUserLoginUsecase(ur))
 	orderhandler.New(e, "iddqd", orderusecases.NewOrderStoreUsecase(or, adapters.NewAccrualAdpater(cfg.AccrualSystemAddress)), orderusecases.NewOrderListUsecase(or))
 	withdrawhandler.New(e, "iddqd", withdrawusecases.NewWithdrawStoreUsecase(wr), withdrawusecases.NewWithdrawListUsecase(wr))
+	balancehandler.New(e, "iddqd", balanceusecases.NewCheckBalanceUsecase(br))
 
 	e.Logger.Fatal(e.Start(cfg.Address))
 }
