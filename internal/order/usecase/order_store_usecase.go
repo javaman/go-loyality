@@ -40,6 +40,10 @@ func (uc *orderStoreUsecase) Store(o *domain.Order) error {
 	o.Accrual = orderDetails.Accrual
 	o.Status = orderDetails.Status
 
+	if len(o.Status) == 0 {
+		o.Status = domain.NEW
+	}
+
 	err = uc.orderRepository.Insert(o)
 	if err != nil {
 		return err
