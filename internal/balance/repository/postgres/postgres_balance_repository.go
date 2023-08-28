@@ -27,8 +27,8 @@ func (r *postgresBalanceRepository) Select(login string) (*domain.Balance, error
 	rows, err := r.db.Query(`
 		SELECT (A.DEBET - B.CREDIT), B.CREDIT
 		  FROM 
-		  	(SELECT NVL(SUM(O.accrural), 0) DEBET FROM ORDERS O WHERE O.LOGIN = $1) A, 
-			(SELECT NVAL(SUM(W.sum), 0) CREDIT FROM withdraws W WHERE W.LOGIN = $1) B
+		  	(SELECT coalesce(SUM(O.accrural), 0) DEBET FROM ORDERS O WHERE O.LOGIN = $1) A, 
+			(SELECT coalesce(SUM(W.sum), 0) CREDIT FROM withdraws W WHERE W.LOGIN = $1) B
 	`, login)
 
 	if err != nil {
