@@ -44,7 +44,13 @@ func createOrdersTable(db *sql.DB) error {
 }
 
 func (r *postgresOrderRepository) Insert(o *domain.Order) error {
-	str := strings.Split(string(o.Accrual), ".")
+
+	_, err := r.db.Exec("INSERT INTO orders (number, login, status, accrural) VALUES ($1, $2, $3, $4)", o.Number, o.Login, o.Status, fromJsonNumber(o.Accrual))
+	return err
+}
+
+func fromJsonNumber(x json.Number) int64 {
+	str := strings.Split(string(x), ".")
 	actualAccural, _ := strconv.Atoi(str[0])
 	actualAccural *= 100
 	if len(str) > 1 {
@@ -57,9 +63,25 @@ func (r *postgresOrderRepository) Insert(o *domain.Order) error {
 			actualAccural += x
 		}
 	}
+	return int64(actualAccural)
+}
 
-	_, err := r.db.Exec("INSERT INTO orders (number, login, status, accrural) VALUES ($1, $2, $3, $4)", o.Number, o.Login, o.Status, actualAccural)
-	return err
+func toJsonNumber(x int64) json.Number {
+	a := x / 100
+	b := x % 100
+	var result json.Number
+
+	if b < 10 && b > 0 {
+		result = json.Number(fmt.Sprintf("%d.0%d", a, b))
+	} else if slices.Contains([]int64{10, 20, 30, 40, 50, 60, 70, 80, 90}, b) {
+		result = json.Number(fmt.Sprintf("%d.%d", a, b/10))
+	} else if b == 0 {
+		result = json.Number(fmt.Sprintf("%d", a))
+	} else {
+		result = json.Number(fmt.Sprintf("%d.%d", a, b))
+	}
+
+	return result
 }
 
 func (r *postgresOrderRepository) Select(number string) (*domain.Order, error) {
@@ -81,18 +103,7 @@ func (r *postgresOrderRepository) Select(number string) (*domain.Order, error) {
 
 		err := rows.Scan(&o.Number, &o.Login, &o.Status, &x, &o.UploadedAt)
 
-		a := x / 100
-		b := x % 100
-
-		if b < 10 && b > 0 {
-			o.Accrual = json.Number(fmt.Sprintf("%d.0%d", a, b))
-		} else if slices.Contains([]int64{10, 20, 30, 40, 50, 60, 70, 80, 90}, b) {
-			o.Accrual = json.Number(fmt.Sprintf("%d.%d", a, b/10))
-		} else if b == 0 {
-			o.Accrual = json.Number(fmt.Sprintf("%d", a))
-		} else {
-			o.Accrual = json.Number(fmt.Sprintf("%d.%d", a, b))
-		}
+		o.Accrual = toJsonNumber(x)
 
 		if err != nil {
 			return nil, err
@@ -124,18 +135,7 @@ func (r *postgresOrderRepository) SelectAll(login string) ([]*domain.Order, erro
 
 		err := rows.Scan(&o.Number, &o.Login, &o.Status, &x, &o.UploadedAt)
 
-		a := x / 100
-		b := x % 100
-
-		if b < 10 && b > 0 {
-			o.Accrual = json.Number(fmt.Sprintf("%d.0%d", a, b))
-		} else if slices.Contains([]int64{10, 20, 30, 40, 50, 60, 70, 80, 90}, b) {
-			o.Accrual = json.Number(fmt.Sprintf("%d.%d", a, b/10))
-		} else if b == 0 {
-			o.Accrual = json.Number(fmt.Sprintf("%d", a))
-		} else {
-			o.Accrual = json.Number(fmt.Sprintf("%d.%d", a, b))
-		}
+		o.Accrual = toJsonNumber(x)
 
 		if err != nil {
 			return nil, err

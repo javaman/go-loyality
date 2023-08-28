@@ -8,15 +8,15 @@ import (
 type Withdraw struct {
 	Order       string `json:"order"`
 	Login       string
-	Sum         int64 `json:"sum"`
+	Sum         json.Number `json:"sum"`
 	ProcessedAt time.Time
 }
 
 func (w *Withdraw) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Order       string `json:"order"`
-		Sum         int64  `json:"sum"`
-		ProcessedAt string `json:"processed_at"`
+		Order       string      `json:"order"`
+		Sum         json.Number `json:"sum"`
+		ProcessedAt string      `json:"processed_at"`
 	}{
 		Order:       w.Order,
 		Sum:         w.Sum,
