@@ -33,7 +33,7 @@ func New(e *echo.Echo, secret string, storeWithdrawUsecase domain.StoreWithdrawU
 
 	r2 := e.Group("/api/user/withdrawals")
 	r2.Use(echojwt.WithConfig(config))
-	r1.Use(mwr.ExtractLogin)
+	r2.Use(mwr.ExtractLogin)
 	r2.GET("", handler.ListWithdrawls)
 }
 
