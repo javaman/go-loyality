@@ -36,7 +36,7 @@ func (h *UserHandler) Register(c echo.Context) error {
 	case domain.ErrorLoginExists:
 		return c.NoContent(http.StatusConflict)
 	case nil:
-		if e := h.setAuthorizationHeder(u.Login, c); e != nil {
+		if e := h.setAuthorizationHeader(c, u.Login); e != nil {
 			return c.NoContent(http.StatusInternalServerError)
 		}
 		return c.NoContent(http.StatusOK)
@@ -62,14 +62,14 @@ func (h *UserHandler) Login(c echo.Context) error {
 		return c.NoContent(http.StatusUnauthorized)
 	}
 
-	err = h.setAuthorizationHeder(u.Login, c)
+	err = h.setAuthorizationHeader(c, u.Login)
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	return c.NoContent(http.StatusOK)
 }
 
-func (h *UserHandler) setAuthorizationHeder(login string, c echo.Context) error {
+func (h *UserHandler) setAuthorizationHeader(c echo.Context, login string) error {
 
 	claims := jwt.RegisteredClaims{
 		Subject:   login,

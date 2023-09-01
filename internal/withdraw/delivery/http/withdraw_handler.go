@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/golang-jwt/jwt/v5"
+	mwr "github.com/javaman/go-loyality/internal/delivery/http"
 	"github.com/javaman/go-loyality/internal/domain"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -28,17 +28,13 @@ func New(e *echo.Echo, secret string, storeWithdrawUsecase domain.StoreWithdrawU
 
 	r1 := e.Group("/api/user/balance/withdraw")
 	r1.Use(echojwt.WithConfig(config))
+	r1.Use(mwr.ExtractLogin)
 	r1.POST("", handler.StoreWithdraw)
 
 	r2 := e.Group("/api/user/withdrawals")
 	r2.Use(echojwt.WithConfig(config))
+	r1.Use(mwr.ExtractLogin)
 	r2.GET("", handler.ListWithdrawls)
-}
-
-func getLogin(c echo.Context) (string, error) {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	return claims.GetSubject()
 }
 
 func (h *withdrawHandler) StoreWithdraw(c echo.Context) error {
@@ -48,15 +44,11 @@ func (h *withdrawHandler) StoreWithdraw(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	login, err := getLogin(c)
-
-	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
+	login := c.Get("Login").(string)
 
 	withdraw.Login = login
 
-	err = h.storeWithdrawUsecase.Store(withdraw)
+	err := h.storeWithdrawUsecase.Store(withdraw)
 	switch err {
 	case nil:
 		return c.NoContent(http.StatusOK)
@@ -68,10 +60,7 @@ func (h *withdrawHandler) StoreWithdraw(c echo.Context) error {
 }
 
 func (h *withdrawHandler) ListWithdrawls(c echo.Context) error {
-	login, err := getLogin(c)
-	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
+	login := c.Get("Login").(string)
 
 	result, err := h.listWithdrawsUsecase.List(login)
 	if err != nil {

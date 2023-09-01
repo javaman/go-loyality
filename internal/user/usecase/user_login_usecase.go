@@ -18,5 +18,5 @@ func (uc *userLoginUsecase) Login(u *domain.User) (bool, error) {
 	if found == nil {
 		return false, nil
 	}
-	return u.Login == found.Login, nil
+	return u.Password == found.Password, nil
 }

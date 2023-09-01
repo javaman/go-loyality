@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -40,23 +39,17 @@ func getLogin(c echo.Context) (string, error) {
 
 func (h *balanceHandler) Check(c echo.Context) error {
 
-	fmt.Println("Here1")
 	login, err := getLogin(c)
 
 	if err != nil {
-		fmt.Println(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	balance, err := h.checkBalanceUsecase.Check(login)
 
 	if err != nil {
-		fmt.Println(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
-
-	fmt.Println(balance.Current)
-	fmt.Println(balance.Withdrawn)
 
 	return c.JSON(http.StatusOK, &balance)
 }
