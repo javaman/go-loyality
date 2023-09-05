@@ -39,6 +39,7 @@ func createOrdersTable(db *sql.DB) error {
 			status text,
 			accrual numeric,
 			uploaded_at timestamp NOT NULL default now(),
+			version numeric NOT NULL default 0,
 			CONSTRAINT orders_pk PRIMARY KEY (number),
 			CONSTRAINT users_fk FOREIGN KEY (login) REFERENCES users(login)
 		)
