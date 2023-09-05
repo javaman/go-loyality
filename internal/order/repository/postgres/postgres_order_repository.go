@@ -170,6 +170,8 @@ func (r *postgresOrderRepository) updateWithVersion(o *domain.Order, version int
 	if err != nil {
 		return false, err
 	}
+	fmt.Println(err)
+	fmt.Printf("********** %d \n", rows)
 	return rows > 0, nil
 }
 
