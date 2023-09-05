@@ -162,7 +162,7 @@ func (r *postgresOrderRepository) Update(u *domain.Order, version int) (bool, er
 }
 
 func (r *postgresOrderRepository) updateWithVersion(o *domain.Order, version int) (bool, error) {
-	result, err := r.db.Exec("UPDATE orders SET status = $2, accrual=$3, version = version + 1 WHERE number = $3 and version = $4", o.Status, fromJSONNumber(o.Accrual), o.Number, version)
+	result, err := r.db.Exec("UPDATE orders SET status = $1, accrual=$2, version = version + 1 WHERE number = $3 and version = $4", o.Status, fromJSONNumber(o.Accrual), o.Number, version)
 	if err != nil {
 		return false, err
 	}
@@ -174,7 +174,7 @@ func (r *postgresOrderRepository) updateWithVersion(o *domain.Order, version int
 }
 
 func (r *postgresOrderRepository) updateWithotVersion(o *domain.Order) (bool, error) {
-	result, err := r.db.Exec("UPDATE orders SET status = $2, accrual=$3, version = version + 1 WHERE number = $3", o.Status, fromJSONNumber(o.Accrual), o.Number)
+	result, err := r.db.Exec("UPDATE orders SET status = $1, accrual=$2, version = version + 1 WHERE number = $3", o.Status, fromJSONNumber(o.Accrual), o.Number)
 	if err != nil {
 		return false, err
 	}
