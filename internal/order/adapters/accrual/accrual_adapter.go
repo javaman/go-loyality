@@ -1,6 +1,8 @@
 package adapters
 
 import (
+	"net/http"
+
 	"github.com/go-resty/resty/v2"
 	"github.com/javaman/go-loyality/internal/domain"
 )
@@ -17,9 +19,12 @@ func NewAccrualAdapter(endpoint string) *adapter {
 
 func (a *adapter) Query(number string) (*domain.Order, error) {
 	var order domain.Order
-	_, err := a.R().SetResult(&order).Get("/api/orders/" + number)
+	r, err := a.R().SetResult(&order).Get("/api/orders/" + number)
 	if err != nil {
 		return nil, err
+	}
+	if r.StatusCode() == http.StatusNoContent {
+		return nil, domain.ErrorOrderNotFound
 	}
 	return &order, nil
 }
