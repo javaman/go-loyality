@@ -27,12 +27,16 @@ func main() {
 	wr := withdrawlrepo.NewWithdrawRepository(cfg.DatabaseURI)
 	br := balancerepo.NewBalanceRepository(cfg.DatabaseURI)
 
+	accrualAdepter := adapters.NewAccrualAdapter(cfg.AccrualSystemAddress)
+
 	e := echo.New()
 
 	userhandler.New(e, cfg.Secret, userusecases.NewUserRegisterUsecase(ur), userusecases.NewUserLoginUsecase(ur))
-	orderhandler.New(e, cfg.Secret, orderusecases.NewOrderStoreUsecase(or, adapters.NewAccrualAdapter(cfg.AccrualSystemAddress)), orderusecases.NewOrderListUsecase(or))
+	orderhandler.New(e, cfg.Secret, orderusecases.NewOrderStoreUsecase(or, accrualAdepter), orderusecases.NewOrderListUsecase(or))
 	withdrawlhandler.New(e, cfg.Secret, withdrawlusecases.NewWithdrawStoreUsecase(wr), withdrawlusecases.NewWithdrawListUsecase(wr))
 	balancehandler.New(e, cfg.Secret, balanceusecases.NewCheckBalanceUsecase(br))
+
+	orderusecases.NewReplicateOrderStatusUsecase(or, accrualAdepter).Run()
 
 	e.Logger.Fatal(e.Start(cfg.Address))
 }

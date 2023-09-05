@@ -50,6 +50,7 @@ type OrderRepository interface {
 	Select(orderNumber string) (*Order, error)
 	SelectAll(login string) ([]*Order, error)
 	Update(o *Order, version int) (bool, error)
+	SelectTenOrders() ([]*Order, error)
 }
 
 type OrderDetails interface {

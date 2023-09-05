@@ -43,8 +43,34 @@ func createwWithdrawsTable(db *sql.DB) error {
 }
 
 func (r *postgresWithdrawRepository) Insert(w *domain.Withdraw) error {
-	_, err := r.db.Exec("INSERT INTO withdraws (number, login, sum) VALUES ($1, $2, $3)", w.Order, w.Login, fromJSONNumber(w.Sum))
-	return err
+	rows, err := r.db.Exec(`
+		WITH locked_user AS (
+			SELECT * FROM USERS WHERE login = $1 FOR UPDATE
+		), existing_balance AS (
+			SELECT (A.DEBET - B.CREDIT) as BALANCE
+			FROM 
+			  (SELECT coalesce(SUM(O.accrual), 0) DEBET FROM ORDERS O WHERE O.LOGIN = $1) A, 
+			  (SELECT coalesce(SUM(W.sum), 0) CREDIT FROM withdraws W WHERE W.LOGIN = $1) B
+		)
+		INSERT INTO withdraws (login, number, sum) SELECT $1, $2, $3 FROM existing_balance WHERE balance >= $3
+	`, w.Login, w.Order, fromJSONNumber(w.Sum))
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	insertedCount, err := rows.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if insertedCount != 1 {
+		return domain.ErrorPayMoney
+	}
+
+	return nil
 }
 
 func (r *postgresWithdrawRepository) SelectAll(login string) ([]*domain.Withdraw, error) {

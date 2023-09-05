@@ -9,4 +9,5 @@ var (
 	ErrorOrderExistsSameUser    error = errors.New("order exists")
 	ErrorOrderExistsAnotherUser error = errors.New("order exists but different user")
 	ErrorLoginExists            error = errors.New("user with same login exists")
+	ErrorPayMoney               error = errors.New("not enoght money")
 )

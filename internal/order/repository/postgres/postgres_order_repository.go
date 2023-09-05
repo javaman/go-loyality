@@ -155,6 +155,37 @@ func (r *postgresOrderRepository) SelectAll(login string) ([]*domain.Order, erro
 	return orders, nil
 }
 
+func (r *postgresOrderRepository) SelectTenOrders() ([]*domain.Order, error) {
+	rows, err := r.db.Query("SELECT number, login, status, accrual, uploaded_at FROM orders WHERE status not in ('INVALID', 'PROCESSED') ORDER BY uploaded_at LIMIT 10")
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_ = rows.Close()
+		_ = rows.Err()
+	}()
+
+	var orders []*domain.Order
+
+	for rows.Next() {
+		o := new(domain.Order)
+
+		var x int64
+
+		err := rows.Scan(&o.Number, &o.Login, &o.Status, &x, &o.UploadedAt)
+
+		o.Accrual = toJSONNumber(x)
+
+		if err != nil {
+			return nil, err
+		}
+		orders = append(orders, o)
+	}
+	return orders, nil
+}
+
 func (r *postgresOrderRepository) Update(u *domain.Order, version int) (bool, error) {
 	if version >= 0 {
 		return r.updateWithVersion(u, version)

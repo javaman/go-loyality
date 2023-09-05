@@ -54,6 +54,8 @@ func (h *withdrawHandler) StoreWithdraw(c echo.Context) error {
 		return c.NoContent(http.StatusOK)
 	case domain.ErrorBadOrderNumber:
 		return c.NoContent(http.StatusUnprocessableEntity)
+	case domain.ErrorPayMoney:
+		return c.NoContent(http.StatusPaymentRequired)
 	default:
 		return c.NoContent(http.StatusInternalServerError)
 	}
