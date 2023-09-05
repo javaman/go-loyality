@@ -55,7 +55,7 @@ func (uc *orderStoreUsecase) orderExists(o *domain.Order) error {
 func (uc *orderStoreUsecase) orderJustCreated(o *domain.Order) error {
 	go func() {
 		queryResult, err := uc.details.Query(o.Number)
-		if err != nil {
+		if err == nil {
 			queryResult.Number = o.Number
 			uc.orderRepository.Update(queryResult, 0)
 		}
