@@ -57,7 +57,7 @@ func (uc *orderStoreUsecase) orderJustCreated(o *domain.Order) error {
 		queryResult, err := uc.details.Query(o.Number)
 		if err != nil {
 			queryResult.Number = o.Number
-			uc.orderRepository.Update(o, 0)
+			uc.orderRepository.Update(queryResult, 0)
 		}
 	}()
 	return nil
