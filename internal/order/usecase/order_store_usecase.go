@@ -21,6 +21,7 @@ func (uc *orderStoreUsecase) Store(o *domain.Order) error {
 		return domain.ErrorBadOrderNumber
 	}
 
+	o.Status = "NEw"
 	err = uc.orderRepository.Insert(o)
 
 	switch err {
