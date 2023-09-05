@@ -163,6 +163,8 @@ func (r *postgresOrderRepository) Update(u *domain.Order, version int) (bool, er
 
 func (r *postgresOrderRepository) updateWithVersion(o *domain.Order, version int) (bool, error) {
 	result, err := r.db.Exec("UPDATE orders SET status = $1, accrual=$2, version = version + 1 WHERE number = $3 and version = $4", o.Status, fromJSONNumber(o.Accrual), o.Number, version)
+	fmt.Println(|"+++++++++++++++++")
+	fmt.Println(err)
 	if err != nil {
 		return false, err
 	}
