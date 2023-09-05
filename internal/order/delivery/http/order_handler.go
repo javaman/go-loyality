@@ -64,7 +64,7 @@ func (h *orderHandler) StoreOrder(c echo.Context) error {
 		Login:  login,
 	}
 
-	switch e := h.orderStoreUsecase.Store(o); e {
+	switch err := h.orderStoreUsecase.Store(o); err {
 	case nil:
 		return c.NoContent(http.StatusAccepted)
 	case domain.ErrorBadOrderNumber:

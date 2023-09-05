@@ -10,6 +10,6 @@ func NewCheckBalanceUsecase(r domain.BalanceRepository) *checkBalanceUsecase {
 	return &checkBalanceUsecase{repo: r}
 }
 
-func (u *checkBalanceUsecase) Check(login string) (*domain.Balance, error) {
+func (u *checkBalanceUsecase) Check(login string) (domain.Balance, error) {
 	return u.repo.Select(login)
 }

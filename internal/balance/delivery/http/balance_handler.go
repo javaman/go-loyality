@@ -3,7 +3,8 @@ package http
 import (
 	"net/http"
 
-	"github.com/golang-jwt/jwt/v5"
+	mwr "github.com/javaman/go-loyality/internal/delivery/http"
+
 	"github.com/javaman/go-loyality/internal/domain"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -26,24 +27,15 @@ func New(e *echo.Echo, secret string, checkBalanceUsecase domain.CheckBalanceUse
 
 	r1 := e.Group("/api/user/balance")
 	r1.Use(echojwt.WithConfig(config))
+	r1.Use(mwr.ExtractLogin)
 	r1.GET("", handler.Check)
 
 	return handler
 }
 
-func getLogin(c echo.Context) (string, error) {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	return claims.GetSubject()
-}
-
 func (h *balanceHandler) Check(c echo.Context) error {
 
-	login, err := getLogin(c)
-
-	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
+	login := c.Get("Login").(string)
 
 	balance, err := h.checkBalanceUsecase.Check(login)
 

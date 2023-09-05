@@ -23,16 +23,16 @@ func NewBalanceRepository(connectionSring string) *postgresBalanceRepository {
 	return &postgresBalanceRepository{db}
 }
 
-func (r *postgresBalanceRepository) Select(login string) (*domain.Balance, error) {
+func (r *postgresBalanceRepository) Select(login string) (domain.Balance, error) {
 	rows, err := r.db.Query(`
 		SELECT (A.DEBET - B.CREDIT), B.CREDIT
 		  FROM 
-		  	(SELECT coalesce(SUM(O.accrural), 0) DEBET FROM ORDERS O WHERE O.LOGIN = $1) A, 
+		  	(SELECT coalesce(SUM(O.accrual), 0) DEBET FROM ORDERS O WHERE O.LOGIN = $1) A, 
 			(SELECT coalesce(SUM(W.sum), 0) CREDIT FROM withdraws W WHERE W.LOGIN = $1) B
 	`, login)
 
 	if err != nil {
-		return nil, err
+		return domain.Balance{}, err
 	}
 
 	defer func() {
@@ -41,19 +41,19 @@ func (r *postgresBalanceRepository) Select(login string) (*domain.Balance, error
 	}()
 
 	if rows.Next() {
-		u := new(domain.Balance)
+		u := domain.Balance{}
 		var current int64
 		var withdrawn int64
 		err := rows.Scan(&current, &withdrawn)
+		if err != nil {
+			return domain.Balance{}, err
+		}
 		u.Current = toJSONNumber(current)
 		u.Withdrawn = toJSONNumber(withdrawn)
-		if err != nil {
-			return nil, err
-		}
 		return u, nil
-	} else {
-		return nil, nil
-	}
+	} 
+
+	return domain.Balance{}, nil
 }
 
 func toJSONNumber(x int64) json.Number {

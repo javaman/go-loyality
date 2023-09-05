@@ -21,6 +21,20 @@ func (uc *orderStoreUsecase) Store(o *domain.Order) error {
 		return domain.ErrorBadOrderNumber
 	}
 
+	err = uc.orderRepository.Insert(o)
+
+	switch err {
+	case nil:
+		return uc.orderJustCreated(o)
+	case domain.ErrorOrderExists:
+		return uc.orderExists(o)
+	default:
+		return err
+	}
+
+}
+
+func (uc *orderStoreUsecase) orderExists(o *domain.Order) error {
 	storedOrder, err := uc.orderRepository.Select(o.Number)
 
 	if err != nil {
@@ -35,19 +49,16 @@ func (uc *orderStoreUsecase) Store(o *domain.Order) error {
 		}
 	}
 
-	orderDetails, _ := uc.details.Query(o.Number)
+	return nil
+}
 
-	o.Accrual = orderDetails.Accrual
-	o.Status = orderDetails.Status
-
-	if len(o.Status) == 0 {
-		o.Status = domain.NEW
-	}
-
-	err = uc.orderRepository.Insert(o)
-	if err != nil {
-		return err
-	}
-
+func (uc *orderStoreUsecase) orderJustCreated(o *domain.Order) error {
+	go func() {
+		queryResult, err := uc.details.Query(o.Number)
+		if err != nil {
+			queryResult.Number = o.Number
+			uc.orderRepository.Update(o, 0)
+		}
+	}()
 	return nil
 }

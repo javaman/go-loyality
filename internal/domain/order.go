@@ -49,6 +49,7 @@ type OrderRepository interface {
 	Insert(o *Order) error
 	Select(orderNumber string) (*Order, error)
 	SelectAll(login string) ([]*Order, error)
+	Update(o *Order, version int) (bool, error)
 }
 
 type OrderDetails interface {

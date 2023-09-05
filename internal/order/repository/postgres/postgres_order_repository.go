@@ -3,10 +3,13 @@ package repository
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"golang.org/x/exp/slices"
 
@@ -34,7 +37,7 @@ func createOrdersTable(db *sql.DB) error {
 			number text,
 			login text,
 			status text,
-			accrural numeric,
+			accrual numeric,
 			uploaded_at timestamp NOT NULL default now(),
 			CONSTRAINT orders_pk PRIMARY KEY (number),
 			CONSTRAINT users_fk FOREIGN KEY (login) REFERENCES users(login)
@@ -45,7 +48,13 @@ func createOrdersTable(db *sql.DB) error {
 
 func (r *postgresOrderRepository) Insert(o *domain.Order) error {
 
-	_, err := r.db.Exec("INSERT INTO orders (number, login, status, accrural) VALUES ($1, $2, $3, $4)", o.Number, o.Login, o.Status, fromJSONNumber(o.Accrual))
+	_, err := r.db.Exec("INSERT INTO orders (number, login, status, accrual) VALUES ($1, $2, $3, $4)", o.Number, o.Login, o.Status, fromJSONNumber(o.Accrual))
+
+	var e *pgconn.PgError
+	if errors.As(err, &e) && e.Code == pgerrcode.UniqueViolation {
+		return domain.ErrorOrderExists
+	}
+
 	return err
 }
 
@@ -85,7 +94,7 @@ func toJSONNumber(x int64) json.Number {
 }
 
 func (r *postgresOrderRepository) Select(number string) (*domain.Order, error) {
-	rows, err := r.db.Query("SELECT number, login, status, accrural, uploaded_at FROM orders WHERE number=$1 ORDER BY uploaded_at", number)
+	rows, err := r.db.Query("SELECT number, login, status, accrual, uploaded_at FROM orders WHERE number=$1 ORDER BY uploaded_at", number)
 
 	if err != nil {
 		return nil, err
@@ -115,7 +124,7 @@ func (r *postgresOrderRepository) Select(number string) (*domain.Order, error) {
 }
 
 func (r *postgresOrderRepository) SelectAll(login string) ([]*domain.Order, error) {
-	rows, err := r.db.Query("SELECT number, login, status, accrural, uploaded_at FROM orders WHERE login=$1", login)
+	rows, err := r.db.Query("SELECT number, login, status, accrual, uploaded_at FROM orders WHERE login=$1", login)
 
 	if err != nil {
 		return nil, err
@@ -143,4 +152,35 @@ func (r *postgresOrderRepository) SelectAll(login string) ([]*domain.Order, erro
 		orders = append(orders, o)
 	}
 	return orders, nil
+}
+
+func (r *postgresOrderRepository) Update(u *domain.Order, version int) (bool, error) {
+	if version >= 0 {
+		return r.updateWithVersion(u, version)
+	}
+	return r.updateWithotVersion(u)
+}
+
+func (r *postgresOrderRepository) updateWithVersion(o *domain.Order, version int) (bool, error) {
+	result, err := r.db.Exec("UPDATE orders SET status = $2, accrual=$3, version = version + 1 WHERE number = $3 and version = $4", o.Status, fromJSONNumber(o.Accrual), o.Number, version)
+	if err != nil {
+		return false, err
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return rows > 0, nil
+}
+
+func (r *postgresOrderRepository) updateWithotVersion(o *domain.Order) (bool, error) {
+	result, err := r.db.Exec("UPDATE orders SET status = $2, accrual=$3, version = version + 1 WHERE number = $3", o.Status, fromJSONNumber(o.Accrual), o.Number)
+	if err != nil {
+		return false, err
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return rows > 0, nil
 }

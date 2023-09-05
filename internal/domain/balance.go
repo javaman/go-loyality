@@ -8,9 +8,9 @@ type Balance struct {
 }
 
 type CheckBalanceUsecase interface {
-	Check(login string) (*Balance, error)
+	Check(login string) (Balance, error)
 }
 
 type BalanceRepository interface {
-	Select(login string) (*Balance, error)
+	Select(login string) (Balance, error)
 }

@@ -68,4 +68,6 @@ func (r *postgresUserRepository) Select(login string) (*domain.User, error) {
 	} else {
 		return nil, nil
 	}
+
+	
 }
