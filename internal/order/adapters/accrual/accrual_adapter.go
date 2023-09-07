@@ -23,8 +23,14 @@ func (a *adapter) Query(number string) (*domain.Order, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if r.StatusCode() == http.StatusNoContent {
 		return nil, domain.ErrorOrderNotFound
 	}
+
+	if r.StatusCode() == http.StatusTooManyRequests {
+		return nil, domain.ErrorTooFast
+	}
+
 	return &order, nil
 }

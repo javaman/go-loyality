@@ -4,7 +4,11 @@ go 1.20
 
 require github.com/jackc/pgx/v5 v5.4.3
 
-require golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
+require (
+	github.com/benbjohnson/clock v1.3.0 // indirect
+	go.uber.org/ratelimit v0.3.0 // indirect
+	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
+)
 
 require (
 	github.com/ShiraazMoollatjie/goluhn v0.0.0-20211017190329-0d86158c056a // indirect
